@@ -1,0 +1,7 @@
+CHIP PreALU {
+  IN in[16], z, n;
+  OUT out[16];
+  PARTS:
+  Not16(in=in, out=notin);
+  Mux4Way16(a=in, b=false, c=notin, d=true, sel[0]=z, sel[1]=n, out=out);
+}
