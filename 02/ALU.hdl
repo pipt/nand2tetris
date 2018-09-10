@@ -1,0 +1,15 @@
+CHIP ALU {
+  IN x[16], y[16], zx, nx, zy, ny, f, no;
+  OUT out[16], zr, ng;
+  PARTS:
+  PreALU(in=x, z=zx, n=nx, out=postx);
+  PreALU(in=y, z=zy, n=ny, out=posty);
+  And16(a=postx, b=posty, out=andxy);
+  Add16(a=postx, b=posty, out=addxy);
+  Mux16(a=andxy, b=addxy, sel=f, out=processed);
+  Not16(in=processed, out=negatedprocessed);
+  Mux16(a=processed, b=negatedprocessed, sel=no, out=output);
+  IsNegative(in=output, out=ng);
+  IsZero(in=output, out=zr);
+  And16(a=output, b=output, out=out);
+}
