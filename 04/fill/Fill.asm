@@ -22,12 +22,26 @@ M=0
 
 (START)
 
+@KBD
+D=M
+@WHITE
+D;JEQ
+@BLACK
+D;JNE
+
+(PAINT)
+
 @SCREEN
 D=A
 @offset
-A=D+M
-M=0
-M=!M
+D=D+M
+@location
+M=D
+@pixel
+D=M
+@location
+A=M
+M=D
 
 @offset
 M=M+1
@@ -39,3 +53,16 @@ D;JGT
 
 @START
 0;JMP
+
+(BLACK)
+@pixel
+M=0
+M=!M
+@PAINT
+M;JMP
+
+(WHITE)
+@pixel
+M=0
+@PAINT
+M;JMP
