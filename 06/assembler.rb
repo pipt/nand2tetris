@@ -188,10 +188,6 @@ class Parser
     @symbols ||= parsed_lines.select { |line| line.is_a?(Sym) }
   end
 
-  def addresses
-    @addresses ||= parsed_lines.select { |line| line.is_a?(Address) }
-  end
-
   def not_symbols
     @not_symbols ||= parsed_lines.delete_if { |line| line.is_a?(Sym) }
   end
