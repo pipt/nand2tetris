@@ -22,6 +22,8 @@ class Command
   def self.for(line)
     if line.start_with?("push")
       Push.for(line)
+    elsif line.start_with?("pop")
+      Pop.for(line)
     elsif %w[eq lt gt].include?(line)
       Compare.new(line)
     elsif line == "sub"
@@ -62,9 +64,135 @@ class Push < Command
     _, sub_command, arg = line.split(" ")
     if sub_command == "constant"
       PushConstant.new(arg)
+    elsif sub_command == "local"
+      PushWithBaseAndOffset.new("LCL", arg)
+    elsif sub_command == "argument"
+      PushWithBaseAndOffset.new("ARG", arg)
+    elsif sub_command == "this"
+      PushWithBaseAndOffset.new("THIS", arg)
+    elsif sub_command == "that"
+      PushWithBaseAndOffset.new("THAT", arg)
+    elsif sub_command == "pointer"
+      PushDirect.new(3 + arg.to_i)
+    elsif sub_command == "temp"
+      PushDirect.new(5 + arg.to_i)
     else
       new(line)
     end
+  end
+end
+
+class Pop < Command
+  def self.for(line)
+    _, sub_command, arg = line.split(" ")
+    if sub_command == "local"
+      PopWithBaseAndOffset.new("LCL", arg)
+    elsif sub_command == "argument"
+      PopWithBaseAndOffset.new("ARG", arg)
+    elsif sub_command == "this"
+      PopWithBaseAndOffset.new("THIS", arg)
+    elsif sub_command == "that"
+      PopWithBaseAndOffset.new("THAT", arg)
+    elsif sub_command == "pointer"
+      PopDirect.new(3 + arg.to_i)
+    elsif sub_command == "temp"
+      PopDirect.new(5 + arg.to_i)
+    else
+      new(line)
+    end
+  end
+end
+
+class PopDirect
+  attr_reader :offset
+
+  def initialize(offset)
+    @offset = offset
+  end
+
+  def to_asm
+    <<~eos
+      // pop offset #{offset}
+      @#{offset}
+      D=A
+      @R13
+      M=D
+      #{POP_M}
+      D=M
+      @R13
+      A=M
+      M=D
+      // end pop offset #{offset}
+    eos
+  end
+end
+
+class PushDirect
+  attr_reader :offset
+
+  def initialize(offset)
+    @offset = offset
+  end
+
+  def to_asm
+    <<~eos
+      // push offset #{offset}
+      @#{offset}
+      D=M
+      #{PUSH_D}
+      // end push offset #{offset}
+    eos
+  end
+end
+
+class PopWithBaseAndOffset
+  attr_reader :base, :offset
+
+  def initialize(base, offset)
+    @base = base
+    @offset = offset
+  end
+
+  def to_asm
+    <<~eos
+      // pop segment #{base}
+      @#{offset}
+      D=A
+      @#{base}
+      A=M
+      D=A+D
+      @R13
+      M=D
+      #{POP_M}
+      D=M
+      @R13
+      A=M
+      M=D
+      // end pop segment #{base}
+    eos
+  end
+end
+
+class PushWithBaseAndOffset
+  attr_reader :base, :offset
+
+  def initialize(base, offset)
+    @base = base
+    @offset = offset
+  end
+
+  def to_asm
+    <<~eos
+      // push segment #{base}
+      @#{offset}
+      D=A
+      @#{base}
+      A=M
+      A=A+D
+      D=M
+      #{PUSH_D}
+      // end push segment #{base}
+    eos
   end
 end
 
@@ -180,6 +308,4 @@ end
 
 parser = Parser.new(ARGF.readlines)
 
-require "pp"
-#pp parser.parsed_lines
 puts parser.to_asm
