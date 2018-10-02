@@ -1,3 +1,15 @@
+POP_M = "// Pop to M register
+@SP
+M=M-1
+A=M"
+
+PUSH_D = "// Push D register
+@SP
+A=M
+M=D
+@SP
+M=M+1"
+
 class Command
   attr_reader :raw
 
@@ -9,7 +21,9 @@ class Command
     if line.start_with?("push")
       Push.for(line)
     elsif line == "add"
-      Add.new
+      Add
+    elsif line == "eq"
+      Eq
     else
       new(line)
     end
@@ -17,7 +31,7 @@ class Command
 end
 
 class Preamble
-  def to_asm
+  def self.to_asm
     <<~eos
       @256
       D=A
@@ -47,33 +61,44 @@ class PushConstant
 
   def to_asm
     <<~eos
+      // push constant #{constant}
       @#{constant}
       D=A
-      @SP
-      A=M
-      M=D
-      @SP
-      M=M+1
+      #{PUSH_D}
+      // end push constant #{constant}
     eos
   end
 end
 
 class Add
-  def to_asm
+  def self.to_asm
     <<~eos
-      @SP
-      M=M-1
-      A=M
+      // add
+      #{POP_M}
+      D=M // Put first arg in D
+      #{POP_M}
+      D=D+M // Add second arg to D
+      #{PUSH_D}
+      // end add
+    eos
+  end
+end
+
+class Eq
+  def self.to_asm
+    <<~eos
+      // eq
+      #{POP_M}
       D=M
-      @SP
-      M=M-1
-      A=M
-      D=D+M
+      #{POP_M}
+      D=M-D
       @SP
       A=M
-      M=D
+      M=0
+
       @SP
       M=M+1
+      // end eq
     eos
   end
 end
@@ -104,7 +129,7 @@ class Parser
   end
 
   def to_asm
-    ([Preamble.new] + parsed_lines).map(&:to_asm).map(&:chomp).join("\n")
+    ([Preamble] + parsed_lines).map(&:to_asm).map(&:chomp).join("\n")
   end
 end
 
