@@ -1,4 +1,5 @@
 require "securerandom"
+require "pathname"
 
 POP_M = "// Pop to M register
 @SP
@@ -19,11 +20,11 @@ class Command
     @raw = raw
   end
 
-  def self.for(line)
+  def self.for(line, filename)
     if line.start_with?("push")
-      Push.for(line)
+      Push.for(line, filename)
     elsif line.start_with?("pop")
-      Pop.for(line)
+      Pop.for(line, filename)
     elsif %w[eq lt gt].include?(line)
       Compare.new(line)
     elsif line == "sub"
@@ -60,7 +61,7 @@ class Preamble
 end
 
 class Push < Command
-  def self.for(line)
+  def self.for(line, filename)
     _, sub_command, arg = line.split(" ")
     if sub_command == "constant"
       PushConstant.new(arg)
@@ -83,7 +84,7 @@ class Push < Command
 end
 
 class Pop < Command
-  def self.for(line)
+  def self.for(line, filename)
     _, sub_command, arg = line.split(" ")
     if sub_command == "local"
       PopWithBaseAndOffset.new("LCL", arg)
@@ -277,10 +278,11 @@ class Compare < OpWithOperator
 end
 
 class Parser
-  attr_reader :raw_lines
+  attr_reader :raw_lines, :path
 
-  def initialize(raw_lines)
-    @raw_lines = raw_lines
+  def initialize(path)
+    @path = Pathname.new(path)
+    @raw_lines = @path.readlines
   end
 
   def lines
@@ -298,7 +300,7 @@ class Parser
 
 
   def parse
-    lines.map { |line| Command.for(line) }
+    lines.map { |line| Command.for(line, path.basename) }
   end
 
   def to_asm
@@ -306,6 +308,6 @@ class Parser
   end
 end
 
-parser = Parser.new(ARGF.readlines)
+parsers = ARGV.map { |path| Parser.new(path) }
 
-puts parser.to_asm
+puts parsers.map(&:to_asm).join("\n")
