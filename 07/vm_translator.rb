@@ -26,6 +26,10 @@ class Command
       Add
     elsif line == "eq"
       Eq
+    elsif line == "lt"
+      Lt
+    elsif line == "gt"
+      Gt
     else
       new(line)
     end
@@ -113,6 +117,60 @@ class Eq
       @SP
       M=M+1
       // end eq
+    eos
+  end
+end
+
+class Lt
+  def self.to_asm
+    random_label = SecureRandom.hex
+    <<~eos
+      // lt
+      #{POP_M}
+      D=M
+      #{POP_M}
+      D=M-D
+      // Set top of stack to 0
+      @SP
+      A=M
+      M=0
+      @#{random_label}
+      D;JLT // If the difference of the arguments is < 0, we skip setting M to -1
+      @SP
+      A=M
+      M=-1
+      (#{random_label})
+      // Increment SP
+      @SP
+      M=M+1
+      // end lt
+    eos
+  end
+end
+
+class Gt
+  def self.to_asm
+    random_label = SecureRandom.hex
+    <<~eos
+      // gt
+      #{POP_M}
+      D=M
+      #{POP_M}
+      D=M-D
+      // Set top of stack to 0
+      @SP
+      A=M
+      M=0
+      @#{random_label}
+      D;JGT // If the difference of the arguments is > 0, we skip setting M to -1
+      @SP
+      A=M
+      M=-1
+      (#{random_label})
+      // Increment SP
+      @SP
+      M=M+1
+      // end gt
     eos
   end
 end
