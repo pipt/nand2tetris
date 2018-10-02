@@ -24,12 +24,8 @@ class Command
       Push.for(line)
     elsif line == "add"
       Add
-    elsif line == "eq"
-      Eq
-    elsif line == "lt"
-      Lt
-    elsif line == "gt"
-      Gt
+    elsif %w[eq lt gt].include?(line)
+      Compare.new(line)
     elsif line == "sub"
       Sub
     elsif line == "neg"
@@ -172,65 +168,17 @@ class Not
   end
 end
 
-class Eq
-  def self.to_asm
-    random_label = SecureRandom.hex
-    <<~eos
-      // eq
-      #{POP_M}
-      D=M
-      #{POP_M}
-      D=M-D
-      // Set top of stack to -1 (true)
-      @SP
-      A=M
-      M=-1
-      @#{random_label}
-      D;JEQ // If the difference of the arguments is 0, we skip setting M to 0 (false)
-      @SP
-      A=M
-      M=0
-      (#{random_label})
-      // Increment SP
-      @SP
-      M=M+1
-      // end eq
-    eos
-  end
-end
+class Compare
+  attr_reader :operator
 
-class Lt
-  def self.to_asm
-    random_label = SecureRandom.hex
-    <<~eos
-      // lt
-      #{POP_M}
-      D=M
-      #{POP_M}
-      D=M-D
-      // Set top of stack to -1 (true)
-      @SP
-      A=M
-      M=-1
-      @#{random_label}
-      D;JLT // If the difference of the arguments is < 0, we skip setting M to 0 (false)
-      @SP
-      A=M
-      M=0
-      (#{random_label})
-      // Increment SP
-      @SP
-      M=M+1
-      // end lt
-    eos
+  def initialize(operator)
+    @operator = operator
   end
-end
 
-class Gt
-  def self.to_asm
+  def to_asm
     random_label = SecureRandom.hex
     <<~eos
-      // gt
+      // #{operator}
       #{POP_M}
       D=M
       #{POP_M}
@@ -240,7 +188,7 @@ class Gt
       A=M
       M=-1
       @#{random_label}
-      D;JGT // If the difference of the arguments is > 0, we skip setting M to 0 (false)
+      D;J#{operator.upcase}
       @SP
       A=M
       M=0
@@ -248,7 +196,7 @@ class Gt
       // Increment SP
       @SP
       M=M+1
-      // end gt
+      // end #{operator}
     eos
   end
 end
