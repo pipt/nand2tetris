@@ -1,7 +1,9 @@
+// SP=256
 @256
 D=A
 @SP
 M=D
+
 // push constant 10
 @10
 D=A

@@ -1,7 +1,9 @@
+// SP=256
 @256
 D=A
 @SP
 M=D
+
 // push segment ARG
 @1
 D=A

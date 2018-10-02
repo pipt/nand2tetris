@@ -51,6 +51,12 @@ class Command
       Goto.new(line)
     elsif line.start_with?("if-goto")
       IfGoto.new(line)
+    elsif line.start_with?("function")
+      Function.new(line)
+    elsif line.start_with?("call")
+      Call.new(line)
+    elsif line == "return"
+      Return
     else
       new(line)
     end
@@ -61,19 +67,181 @@ class Command
   end
 end
 
+class Return
+  def self.to_asm
+    <<~eos
+      // FRAME = LCL
+      @LCL
+      D=M
+      @R13 // FRAME
+      M=D
+
+      // RET = *(FRAME-5)
+      @R13
+      D=M
+      @R14 // RET
+      M=D
+      @5
+      D=A
+      @R14 // RET
+      M=M-D
+
+      // *ARG = pop()
+      #{POP_M}
+      D=M
+      @ARG
+      M=D
+
+      // SP = ARG+1
+      @ARG
+      D=M+1
+      @SP
+      M=D
+
+      // THAT = *(FRAME-1)
+      @R13 // FRAME
+      D=M
+      @R15
+      M=D
+      @1
+      D=A
+      @R15
+      D=M-D
+      @THAT
+      M=D
+
+      // THIS = *(FRAME-2)
+      @R13 // FRAME
+      D=M
+      @R15
+      M=D
+      @2
+      D=A
+      @R15
+      D=M-D
+      @THIS
+      M=D
+
+      // ARG = *(FRAME-3)
+      @R13 // FRAME
+      D=M
+      @R15
+      M=D
+      @3
+      D=A
+      @R15
+      D=M-D
+      @ARG
+      M=D
+
+      // LCL = *(FRAME-4)
+      @R13 // FRAME
+      D=M
+      @R15
+      M=D
+      @4
+      D=A
+      @R15
+      D=M-D
+      @LCL
+      M=D
+
+      // goto RET
+      @R14
+      A=M
+      0;JMP
+    eos
+  end
+end
+
+class Call
+  attr_reader :name, :arg_count
+
+  def initialize(line)
+    _, @name, @arg_count = line.split(" ")
+  end
+
+  def to_asm
+    return_address = SecureRandom.hex
+    <<~eos
+      @#{return_address}
+      D=A
+      #{PUSH_D}
+      @LCL
+      D=M
+      #{PUSH_D}
+      @ARG
+      D=M
+      #{PUSH_D}
+      @THIS
+      D=M
+      #{PUSH_D}
+      @THAT
+      D=M
+      #{PUSH_D}
+      @SP
+      D=M
+      @#{arg_count.to_i + 5}
+      D=D-A
+      @ARG
+      M=D
+      @SP
+      D=M
+      @LCL
+      M=D
+      @#{name}
+      0;JMP
+      (#{return_address})
+    eos
+  end
+end
+
+class Function
+  attr_reader :name, :variable_count
+
+  def initialize(line)
+    _, @name, @variable_count = line.split(" ")
+  end
+
+  def to_asm
+    Global.function = name
+    loop_label = "#{name}.loop"
+    end_label = "#{name}.loop.end"
+    <<~eos
+      (#{name})
+      @#{variable_count}
+      D=A
+      @R13
+      M=D
+      (#{loop_label})
+      @R13
+      D=M
+      @#{end_label}
+      D;JEQ
+      @0
+      D=A
+      #{PUSH_D}
+      @R13
+      M=M-1
+      @#{loop_label}
+      0;JMP
+      (#{end_label})
+    eos
+  end
+end
+
 class WithLabel
   attr_reader :label
 
   def initialize(line)
-    _, label = line.split(" ")
-    @label = "#{Global.function}$#{label}"
+    _, @label = line.split(" ")
   end
 end
 
 class Label < WithLabel
   def to_asm
     <<~eos
-      (#{label})
+      (#{Global.function}$#{label})
     eos
   end
 end
@@ -81,7 +249,7 @@ end
 class Goto < WithLabel
   def to_asm
     <<~eos
-      @#{label}
+      @#{Global.function}$#{label}
       0;JMP
     eos
   end
@@ -92,7 +260,7 @@ class IfGoto < WithLabel
     <<~eos
       #{POP_M}
       D=M
-      @#{label}
+      @#{Global.function}$#{label}
       D;JNE
     eos
   end
@@ -101,11 +269,17 @@ end
 class Preamble
   def self.to_asm
     <<~eos
+      // SP=256
       @256
       D=A
       @SP
       M=D
     eos
+
+#      // call Sys.init
+#      @Sys.init
+#      0;JMP
+#    eos
   end
 end
 
@@ -357,10 +531,10 @@ class Parser
   end
 
   def to_asm
-    ([Preamble] + parsed_lines).map(&:to_asm).map(&:chomp).join("\n")
+    parsed_lines.map(&:to_asm).map(&:chomp).join("\n")
   end
 end
 
 parsers = ARGV.map { |path| Parser.new(path) }
 
-puts parsers.map(&:to_asm).join("\n")
+puts ([Preamble] + parsers).map(&:to_asm).join("\n")

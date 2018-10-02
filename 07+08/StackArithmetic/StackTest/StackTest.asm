@@ -1,7 +1,9 @@
+// SP=256
 @256
 D=A
 @SP
 M=D
+
 // push constant 17
 @17
 D=A
@@ -37,12 +39,12 @@ D=M-D
 @SP
 A=M
 M=-1
-@9b5fa1e33af29a3ab2882fcf5e03dbbe
+@177e4049b4040af5b60d5f390801d6e7
 D;JEQ
 @SP
 A=M
 M=0
-(9b5fa1e33af29a3ab2882fcf5e03dbbe)
+(177e4049b4040af5b60d5f390801d6e7)
 // Increment SP
 @SP
 M=M+1
@@ -82,12 +84,12 @@ D=M-D
 @SP
 A=M
 M=-1
-@ed65f7e2e2594a0602494a8282fe0972
+@8a71ce431abcdab8e042dd94c58d8990
 D;JEQ
 @SP
 A=M
 M=0
-(ed65f7e2e2594a0602494a8282fe0972)
+(8a71ce431abcdab8e042dd94c58d8990)
 // Increment SP
 @SP
 M=M+1
@@ -127,12 +129,12 @@ D=M-D
 @SP
 A=M
 M=-1
-@269ea3aa98988cf5ab887183720d6cfe
+@2e0245214c50ba6cdc0e198ea0ea66d8
 D;JEQ
 @SP
 A=M
 M=0
-(269ea3aa98988cf5ab887183720d6cfe)
+(2e0245214c50ba6cdc0e198ea0ea66d8)
 // Increment SP
 @SP
 M=M+1
@@ -172,12 +174,12 @@ D=M-D
 @SP
 A=M
 M=-1
-@e56efa4e40a374a4269bdacbb10967f2
+@b179fa16c513b13693c2cfb6086308d8
 D;JLT
 @SP
 A=M
 M=0
-(e56efa4e40a374a4269bdacbb10967f2)
+(b179fa16c513b13693c2cfb6086308d8)
 // Increment SP
 @SP
 M=M+1
@@ -217,12 +219,12 @@ D=M-D
 @SP
 A=M
 M=-1
-@dbfaff227d073628ab2dd7a78479291d
+@010c24684fda71d3bae7d5b564aa70e0
 D;JLT
 @SP
 A=M
 M=0
-(dbfaff227d073628ab2dd7a78479291d)
+(010c24684fda71d3bae7d5b564aa70e0)
 // Increment SP
 @SP
 M=M+1
@@ -262,12 +264,12 @@ D=M-D
 @SP
 A=M
 M=-1
-@dcf07417a69425f93fcd4aa31e6ea49e
+@8f7826aec40563d7c385fd6f4640c9e0
 D;JLT
 @SP
 A=M
 M=0
-(dcf07417a69425f93fcd4aa31e6ea49e)
+(8f7826aec40563d7c385fd6f4640c9e0)
 // Increment SP
 @SP
 M=M+1
@@ -307,12 +309,12 @@ D=M-D
 @SP
 A=M
 M=-1
-@60f50f764d9b373993c942e5b72588fc
+@ea47dcce383da55174f1ae2a930c27a6
 D;JGT
 @SP
 A=M
 M=0
-(60f50f764d9b373993c942e5b72588fc)
+(ea47dcce383da55174f1ae2a930c27a6)
 // Increment SP
 @SP
 M=M+1
@@ -352,12 +354,12 @@ D=M-D
 @SP
 A=M
 M=-1
-@1ad46db4e395e73fb16d8a5b2bc8420f
+@cc7d85763891bcd01cb8974783c69397
 D;JGT
 @SP
 A=M
 M=0
-(1ad46db4e395e73fb16d8a5b2bc8420f)
+(cc7d85763891bcd01cb8974783c69397)
 // Increment SP
 @SP
 M=M+1
@@ -397,12 +399,12 @@ D=M-D
 @SP
 A=M
 M=-1
-@7bea8a89fa6c7d24f522de22b1f43bb4
+@038faabc3db085e44435ffbe4ad87e30
 D;JGT
 @SP
 A=M
 M=0
-(7bea8a89fa6c7d24f522de22b1f43bb4)
+(038faabc3db085e44435ffbe4ad87e30)
 // Increment SP
 @SP
 M=M+1
