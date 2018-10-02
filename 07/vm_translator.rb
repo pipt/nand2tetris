@@ -1,3 +1,5 @@
+require "securerandom"
+
 POP_M = "// Pop to M register
 @SP
 M=M-1
@@ -27,6 +29,10 @@ class Command
     else
       new(line)
     end
+  end
+
+  def to_asm
+    "NOT IMPLEMENTED"
   end
 end
 
@@ -86,16 +92,24 @@ end
 
 class Eq
   def self.to_asm
+    random_label = SecureRandom.hex
     <<~eos
       // eq
       #{POP_M}
       D=M
       #{POP_M}
       D=M-D
+      // Set top of stack to 0
       @SP
       A=M
       M=0
-
+      @#{random_label}
+      D;JEQ // If the difference of the arguments is 0, we skip setting M to -1
+      @SP
+      A=M
+      M=-1
+      (#{random_label})
+      // Increment SP
       @SP
       M=M+1
       // end eq
