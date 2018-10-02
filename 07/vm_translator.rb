@@ -22,20 +22,20 @@ class Command
   def self.for(line)
     if line.start_with?("push")
       Push.for(line)
-    elsif line == "add"
-      Add
     elsif %w[eq lt gt].include?(line)
       Compare.new(line)
     elsif line == "sub"
-      Sub
+      BinaryOp.new("-")
+    elsif line == "add"
+      BinaryOp.new("+")
+    elsif line == "and"
+      BinaryOp.new("&")
+    elsif line == "or"
+      BinaryOp.new("|")
     elsif line == "neg"
       Neg
     elsif line == "not"
       Not
-    elsif line == "and"
-      And
-    elsif line == "or"
-      Or
     else
       new(line)
     end
@@ -86,58 +86,24 @@ class PushConstant
   end
 end
 
-class Add
-  def self.to_asm
-    <<~eos
-      // add
-      #{POP_M}
-      D=M // Put first arg in D
-      #{POP_M}
-      D=D+M // Add second arg to D
-      #{PUSH_D}
-      // end add
-    eos
+class OpWithOperator
+  attr_reader :operator
+
+  def initialize(operator)
+    @operator = operator
   end
 end
 
-class And
-  def self.to_asm
+class BinaryOp < OpWithOperator
+  def to_asm
     <<~eos
-      // and
+      // #{operator}
       #{POP_M}
-      D=M // Put first arg in D
+      D=M
       #{POP_M}
-      D=D&M // And second arg with D
+      D=M#{operator}D
       #{PUSH_D}
-      // end and
-    eos
-  end
-end
-
-class Or
-  def self.to_asm
-    <<~eos
-      // or
-      #{POP_M}
-      D=M // Put first arg in D
-      #{POP_M}
-      D=D|M // Or second arg with D
-      #{PUSH_D}
-      // end or
-    eos
-  end
-end
-
-class Sub
-  def self.to_asm
-    <<~eos
-      // sub
-      #{POP_M}
-      D=M // Put first arg in D
-      #{POP_M}
-      D=M-D // Subtract second arg from D
-      #{PUSH_D}
-      // end sub
+      // end #{operator}
     eos
   end
 end
@@ -168,13 +134,7 @@ class Not
   end
 end
 
-class Compare
-  attr_reader :operator
-
-  def initialize(operator)
-    @operator = operator
-  end
-
+class Compare < OpWithOperator
   def to_asm
     random_label = SecureRandom.hex
     <<~eos
