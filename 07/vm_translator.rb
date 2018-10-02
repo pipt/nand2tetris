@@ -77,6 +77,8 @@ class Push < Command
       PushDirect.new(3 + arg.to_i)
     elsif sub_command == "temp"
       PushDirect.new(5 + arg.to_i)
+    elsif sub_command == "static"
+      PushDirect.new("#{filename}.#{arg}")
     else
       new(line)
     end
@@ -98,6 +100,8 @@ class Pop < Command
       PopDirect.new(3 + arg.to_i)
     elsif sub_command == "temp"
       PopDirect.new(5 + arg.to_i)
+    elsif sub_command == "static"
+      PopDirect.new("#{filename}.#{arg}")
     else
       new(line)
     end
