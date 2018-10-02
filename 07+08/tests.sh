@@ -6,6 +6,8 @@ files=(
 "MemoryAccess/BasicTest/BasicTest"
 "MemoryAccess/PointerTest/PointerTest"
 "MemoryAccess/StaticTest/StaticTest"
+"ProgramFlow/BasicLoop/BasicLoop"
+"ProgramFlow/FibonacciSeries/FibonacciSeries"
 )
 
 for file in ${files[*]}

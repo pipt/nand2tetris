@@ -13,6 +13,12 @@ M=D
 @SP
 M=M+1"
 
+class Global
+  class << self
+    attr_accessor :function
+  end
+end
+
 class Command
   attr_reader :raw
 
@@ -39,6 +45,12 @@ class Command
       UnaryOp.new("-")
     elsif line == "not"
       UnaryOp.new("!")
+    elsif line.start_with?("label")
+      Label.new(line)
+    elsif line.start_with?("goto")
+      Goto.new(line)
+    elsif line.start_with?("if-goto")
+      IfGoto.new(line)
     else
       new(line)
     end
@@ -46,6 +58,43 @@ class Command
 
   def to_asm
     "NOT IMPLEMENTED"
+  end
+end
+
+class WithLabel
+  attr_reader :label
+
+  def initialize(line)
+    _, label = line.split(" ")
+    @label = "#{Global.function}$#{label}"
+  end
+end
+
+class Label < WithLabel
+  def to_asm
+    <<~eos
+      (#{label})
+    eos
+  end
+end
+
+class Goto < WithLabel
+  def to_asm
+    <<~eos
+      @#{label}
+      0;JMP
+    eos
+  end
+end
+
+class IfGoto < WithLabel
+  def to_asm
+    <<~eos
+      #{POP_M}
+      D=M
+      @#{label}
+      D;JNE
+    eos
   end
 end
 
