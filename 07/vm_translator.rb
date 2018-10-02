@@ -33,9 +33,9 @@ class Command
     elsif line == "or"
       BinaryOp.new("|")
     elsif line == "neg"
-      Neg
+      UnaryOp.new("-")
     elsif line == "not"
-      Not
+      UnaryOp.new("!")
     else
       new(line)
     end
@@ -108,28 +108,15 @@ class BinaryOp < OpWithOperator
   end
 end
 
-class Neg
-  def self.to_asm
+class UnaryOp < OpWithOperator
+  def to_asm
     <<~eos
-      // neg
+      // #{operator}
       @SP
       A=M
       A=A-1
-      M=-M
-      // end neg
-    eos
-  end
-end
-
-class Not
-  def self.to_asm
-    <<~eos
-      // not
-      @SP
-      A=M
-      A=A-1
-      M=!M
-      // end not
+      M=#{operator}M
+      // end #{operator}
     eos
   end
 end
